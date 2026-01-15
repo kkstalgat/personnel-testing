@@ -34,7 +34,7 @@ def get_gemini_client():
     return model
 
 
-def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5, timeout=240):
+def call_gemini(prompt, system_instruction=None, max_retries=2, retry_delay=5, timeout=180):
     """
     Вызвать Gemini API с промптом
     
@@ -43,7 +43,7 @@ def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5, t
         system_instruction: Системная инструкция (опционально)
         max_retries: Максимальное количество попыток при ошибке квоты
         retry_delay: Задержка между попытками в секундах
-        timeout: Таймаут запроса в секундах (по умолчанию 240 секунд = 4 минуты)
+        timeout: Таймаут запроса в секундах (по умолчанию 180 секунд = 3 минуты)
     
     Returns:
         str: Ответ от Gemini
@@ -52,16 +52,19 @@ def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5, t
     
     model = get_gemini_client()
     
+    # Уменьшаем max_output_tokens для более быстрого ответа
     generation_config = {
         "temperature": 0.7,
         "top_p": 0.95,
         "top_k": 40,
-        "max_output_tokens": 32768,  # Увеличено для длинных отчетов (максимум для gemini-2.5-flash)
+        "max_output_tokens": 16384,  # Уменьшено для более быстрого ответа
     }
     
     last_error = None
     for attempt in range(max_retries):
         try:
+            print(f"[Gemini API] Попытка {attempt + 1}/{max_retries}. Длина промпта: {len(prompt)} символов")
+            
             # Используем старый API (google.generativeai)
             # Таймаут контролируется на уровне Gunicorn (300 секунд)
             if system_instruction:
@@ -75,16 +78,25 @@ def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5, t
                     prompt,
                     generation_config=generation_config
                 )
+            
+            print(f"[Gemini API] Успешно получен ответ, длина: {len(response.text)} символов")
             return response.text
             
         except Exception as e:
             error_str = str(e)
             last_error = e
+            error_type = type(e).__name__
             
-            # Проверка на таймаут
-            if "timeout" in error_str.lower() or "deadline" in error_str.lower() or "timed out" in error_str.lower():
+            print(f"[Gemini API] Ошибка (попытка {attempt + 1}/{max_retries}): {error_type}: {error_str[:200]}")
+            
+            # Проверка на таймаут или зависание
+            if ("timeout" in error_str.lower() or 
+                "deadline" in error_str.lower() or 
+                "timed out" in error_str.lower() or
+                "SIGKILL" in error_str or
+                error_type in ["Timeout", "DeadlineExceeded"]):
                 if attempt < max_retries - 1:
-                    print(f"Таймаут при вызове Gemini API. Попытка {attempt + 1}/{max_retries}. Повтор через {retry_delay} секунд...")
+                    print(f"[Gemini API] Таймаут. Повтор через {retry_delay} секунд...")
                     time.sleep(retry_delay)
                     continue
                 else:
