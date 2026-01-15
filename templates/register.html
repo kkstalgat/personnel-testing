@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - IQ System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .register-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+        
+        .logo-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .logo-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            margin-top: 15px;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .password-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(66, 66, 66, 0.9);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+            z-index: 1000;
+        }
+        
+        body {
+            padding-bottom: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo-section">
+            <div class="logo-icon">🧠</div>
+            <div class="logo-text">IQ System</div>
+            <div class="logo-subtitle">Регистрация</div>
+        </div>
+        
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+        
+        <form id="register-form">
+            <div class="form-group">
+                <label for="username">Имя пользователя</label>
+                <input type="text" id="username" name="username" required autocomplete="username" placeholder="username">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required autocomplete="email" placeholder="your@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Телефон (необязательно)</label>
+                <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="+79991234567">
+            </div>
+            
+            <div class="form-group">
+                <label for="company_name">Название компании (необязательно)</label>
+                <input type="text" id="company_name" name="company_name" autocomplete="organization" placeholder="ООО Компания">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required autocomplete="new-password" placeholder="••••••••" minlength="8">
+                <div class="password-hint">Минимум 8 символов</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password_confirm">Подтвердите пароль</label>
+                <input type="password" id="password_confirm" name="password_confirm" required autocomplete="new-password" placeholder="••••••••">
+            </div>
+            
+            <button type="submit" class="btn" id="register-btn">Зарегистрироваться</button>
+            <div class="loading" id="loading">Загрузка...</div>
+            
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='/login/'">Уже есть аккаунт? Войти</button>
+        </form>
+        
+        <div class="form-footer">
+            Уже есть аккаунт? <a href="/login/">Войти</a>
+        </div>
+    </div>
+    
+    <script>
+        const registerForm = document.getElementById('register-form');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const loading = document.getElementById('loading');
+        const registerBtn = document.getElementById('register-btn');
+        
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+            loading.classList.add('show');
+            registerBtn.disabled = true;
+            
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('password_confirm').value;
+            
+            if (password !== passwordConfirm) {
+                errorMessage.textContent = 'Пароли не совпадают';
+                errorMessage.classList.add('show');
+                loading.classList.remove('show');
+                registerBtn.disabled = false;
+                return;
+            }
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: password,
+                phone: document.getElementById('phone').value || '',
+                company_name: document.getElementById('company_name').value || ''
+            };
+            
+            try {
+                const response = await fetch('/api/accounts/users/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    successMessage.textContent = data.message || 'Регистрация успешна! Проверьте email для подтверждения.';
+                    successMessage.classList.add('show');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/login/';
+                    }, 2000);
+                } else {
+                    const errorText = data.error || data.detail || (typeof data === 'object' ? JSON.stringify(data) : 'Ошибка регистрации');
+                    errorMessage.textContent = errorText;
+                    errorMessage.classList.add('show');
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Ошибка подключения к серверу';
+                errorMessage.classList.add('show');
+                console.error('Ошибка:', error);
+            } finally {
+                loading.classList.remove('show');
+                registerBtn.disabled = false;
+            }
+        });
+        
+        // Проверить, авторизован ли пользователь
+        if (localStorage.getItem('access_token')) {
+            window.location.href = '/';
+        }
+        
+        // Установить текущий год в футере
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearElement = document.getElementById('current-year');
+            if (yearElement) {
+                yearElement.textContent = new Date().getFullYear();
+            }
+        });
+    </script>
+    <footer class="footer">
+        ТОО "Казахстанские коммунальные системы" © <span id="current-year">2025</span>
+    </footer>
+</body>
+</html>

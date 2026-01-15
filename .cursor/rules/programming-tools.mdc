@@ -1,0 +1,11 @@
+---
+name: programming-tools
+description: This is a new rule
+---
+
+# Overview
+
+Insert overview text here. The agent will only see this should they choose to apply the rule.
+1. Use Framework django
+2. Use СУБД Postgres
+3. Использовать ReportLab для отображения отчетов.

@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прохождение теста</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; /* Предотвращаем горизонтальную прокрутку */
+            padding-bottom: 60px; /* Место для футера */
+        }
+        
+        #test-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Позволяет контенту сжиматься */
+        }
+        
+        .test-header {
+            background: #f0f0f0;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .test-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        
+        .test-header p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+        
+        .question {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            overflow: hidden; /* Предотвращаем выход элементов за границы */
+        }
+        
+        .question img,
+        .question-image {
+            max-width: 100%;
+            max-height: 60vh; /* Ограничиваем высоту до 60% высоты окна */
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            object-fit: contain; /* Сохраняем пропорции */
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        button:hover {
+            background: #1565c0;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .answer-input {
+            margin: 10px 0;
+        }
+        
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1976d2;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-message {
+            font-size: 18px;
+            text-align: center;
+            max-width: 400px;
+            padding: 20px;
+        }
+        
+        /* Адаптивность для планшетов */
+        @media (max-width: 1024px) {
+            body {
+                max-width: 100%;
+                padding: 15px;
+                padding-bottom: 60px;
+            }
+            
+            .test-header {
+                padding: 15px;
+            }
+            
+            .test-header h1 {
+                font-size: 22px;
+            }
+            
+            .timer {
+                font-size: 22px;
+            }
+            
+            .question-image {
+                max-height: 50vh; /* На планшетах еще меньше */
+            }
+        }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                padding-bottom: 60px;
+            }
+            
+            .test-header {
+                padding: 12px 15px;
+                margin-bottom: 15px;
+            }
+            
+            .test-header h1 {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+            
+            .test-header p {
+                font-size: 13px;
+                margin: 6px 0;
+            }
+            
+            .timer {
+                font-size: 20px;
+            }
+            
+            .question {
+                padding: 12px;
+                margin: 15px 0;
+            }
+            
+            .question-image {
+                margin: 15px auto;
+                max-height: 50vh; /* На планшетах еще меньше */
+            }
+            
+            .button-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            button {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+            
+            .loading-message {
+                font-size: 16px;
+                padding: 15px;
+                max-width: 90%;
+            }
+        }
+        
+        /* Адаптивность для маленьких мобильных устройств */
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+                padding-bottom: 60px;
+            }
+            
+            .test-header {
+                padding: 10px 12px;
+            }
+            
+            .test-header h1 {
+                font-size: 18px;
+            }
+            
+            .test-header p {
+                font-size: 12px;
+            }
+            
+            .timer {
+                font-size: 18px;
+            }
+            
+            .question {
+                padding: 10px;
+            }
+            
+            .question-image {
+                margin: 10px auto;
+                max-height: 45vh; /* На мобильных еще меньше */
+            }
+            
+            button {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+            
+            .loading-message {
+                font-size: 14px;
+                padding: 12px;
+            }
+            
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+            }
+            
+            /* Адаптация вариантов ответов для IQ теста на маленьких экранах */
+            .answer-options {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 6px !important;
+            }
+            
+            .answer-options label {
+                padding: 10px 6px !important;
+                font-size: 14px !important;
+            }
+            
+            /* Адаптация вариантов ответов для других тестов */
+            .answer-options label {
+                min-width: auto !important;
+                max-width: 100% !important;
+                flex: 1 1 calc(50% - 5px) !important;
+            }
+        }
+        
+        /* Дополнительная адаптация для очень маленьких экранов */
+        @media (max-width: 360px) {
+            .answer-options {
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+            
+            .answer-options label strong {
+                font-size: 12px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1 id="test-name">Тест</h1>
+        <p>Осталось времени: <span class="timer" id="timer">--:--</span></p>
+        <p><span id="current-question">1</span> из <span id="total-questions">0</span></p>
+    </div>
+
+    <div id="test-content">
+        <div class="question" id="question-container">
+            <h3>Загрузка...</h3>
+        </div>
+        
+        <div class="button-container">
+            <button id="prev-btn" onclick="previousQuestion()">Назад</button>
+            <button id="next-btn" onclick="nextQuestion()">Далее</button>
+            <button id="complete-btn" onclick="completeTest()" style="display:none;">Завершить тест</button>
+        </div>
+    </div>
+
+    <div id="results" class="results" style="display:none;">
+        <h2>Результаты тестирования</h2>
+        <div id="results-content"></div>
+    </div>
+
+    <script>
+        // Извлечение session_id из URL: /test/<session_id>/
+        // URL может быть: /test/uuid-here/ или просто UUID в пути
+        let sessionId = null;
+        const pathMatch = window.location.pathname.match(/\/test\/([^\/]+)/);
+        if (pathMatch) {
+            sessionId = pathMatch[1];
+        } else {
+            // Fallback: попробовать получить из последнего сегмента пути
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            if (pathParts.length > 0) {
+                sessionId = pathParts[pathParts.length - 1];
+            }
+        }
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let answers = {};
+        let timerInterval = null;
+        let testType = '';
+        let timeLimitMinutes = 0;
+        let startTime = null;
+        
+        // Загрузка теста и вопросов
+        async function loadTest() {
+            try {
+                // Начать тест
+                const startResponse = await fetch(`/api/tests/sessions/${sessionId}/start/`, {
+                    method: 'GET'
+                });
+                
+                if (!startResponse.ok) {
+                    throw new Error('Ошибка начала теста');
+                }
+                
+                const startData = await startResponse.json();
+                testType = startData.test.test_type;
+                timeLimitMinutes = startData.time_limit_minutes;
+                document.getElementById('test-name').textContent = startData.test.name;
+                
+                // Получить вопросы
+                const questionsResponse = await fetch(`/api/tests/sessions/${sessionId}/questions/`, {
+                    method: 'GET'
+                });
+                
+                if (!questionsResponse.ok) {
+                    throw new Error('Ошибка загрузки вопросов');
+                }
+                
+                const questionsData = await questionsResponse.json();
+                questions = questionsData;
+                
+                if (questions.length === 0) {
+                    document.getElementById('question-container').innerHTML = '<p>Вопросы не найдены</p>';
+                    return;
+                }
+                
+                document.getElementById('total-questions').textContent = questions.length;
+                startTime = new Date();
+                startTimer(timeLimitMinutes);
+                displayQuestion(0);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки теста:', error);
+                document.getElementById('question-container').innerHTML = `<p>Ошибка: ${error.message}</p>`;
+            }
+        }
+        
+        function startTimer(minutes) {
+            let totalSeconds = minutes * 60;
+            const timerElement = document.getElementById('timer');
+            
+            timerInterval = setInterval(() => {
+                const mins = Math.floor(totalSeconds / 60);
+                const secs = totalSeconds % 60;
+                timerElement.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    completeTest();
+                }
+                totalSeconds--;
+            }, 1000);
+        }
+        
+        function displayQuestion(index) {
+            if (index < 0 || index >= questions.length) return;
+            
+            currentQuestionIndex = index;
+            const question = questions[index];
+            
+            // Используем порядковый номер (индекс + 1) вместо номера вопроса из базы
+            const questionNumber = index + 1;
+            document.getElementById('current-question').textContent = questionNumber;
+            document.getElementById('prev-btn').disabled = (index === 0);
+            document.getElementById('next-btn').disabled = (index === questions.length - 1);
+            document.getElementById('complete-btn').style.display = (index === questions.length - 1) ? 'inline-block' : 'none';
+            
+            let html = '';
+            
+            // Убираем заголовок "Вопрос №" - он не несет смысловой нагрузки
+            // Оставляем только текст вопроса
+            
+            // Блок больше не отображаем (скрыт для рандомизации)
+            
+            // Изображение вопроса (для IQ теста)
+            if (question.question_image) {
+                html += `<img src="${question.question_image}" alt="Вопрос ${question.question_number}" class="question-image">`;
+            }
+            
+            // Текст вопроса
+            html += `<p style="font-size: 16px; margin: 20px 0; line-height: 1.6;">${question.question_text || ''}</p>`;
+            
+            // Отображение вариантов ответов на основе display_type
+            const displayType = question.display_type || 'radio';
+            const answerOptions = question.answer_options || [];
+            const savedAnswer = answers[question.question_number] || '';
+            
+            if (displayType === 'textarea') {
+                // Открытый текст
+                html += `<textarea id="answer-text" rows="6" style="width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; margin-top: 10px; font-family: inherit;" oninput="saveAnswer(${question.question_number}, this.value)" placeholder="Введите ваш ответ...">${savedAnswer}</textarea>`;
+                
+            } else if (displayType === 'radio' || displayType === 'select') {
+                // Радио кнопки или выпадающий список
+                if (answerOptions.length > 0) {
+                    // Если есть варианты из базы данных
+                    if (displayType === 'select') {
+                        html += `<select id="answer-select" style="width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; margin-top: 10px;" onchange="saveAnswer(${question.question_number}, this.value)">`;
+                        html += '<option value="">-- Выберите ответ --</option>';
+                        answerOptions.forEach(opt => {
+                            const selected = savedAnswer === opt.value ? 'selected' : '';
+                            html += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
+                        });
+                        html += '</select>';
+                    } else {
+                        // Radio кнопки - для теста личностных качеств используем стандартные radio buttons
+                        if (testType === 'personal_qualities') {
+                            // Стандартные radio buttons для теста личностных качеств
+                            html += '<div class="answer-options" style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">';
+                            answerOptions.forEach(opt => {
+                                const checked = savedAnswer === opt.value ? 'checked' : '';
+                                html += `
+                                    <label style="display: flex; align-items: center; padding: 15px 20px; border: 2px solid ${checked ? '#1976d2' : '#ddd'}; border-radius: 8px; cursor: pointer; transition: all 0.3s; background-color: ${checked ? '#e3f2fd' : 'white'};" onmouseover="if(!this.querySelector('input').checked) { this.style.backgroundColor='#f5f5f5'; this.style.borderColor='#bbb'; }" onmouseout="if(!this.querySelector('input').checked) { this.style.backgroundColor='white'; this.style.borderColor='#ddd'; }">
+                                        <input type="radio" name="answer" value="${opt.value}" ${checked} onchange="saveAnswer(${question.question_number}, '${opt.value}')" style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer; flex-shrink: 0;">
+                                        <span style="font-size: 16px; font-weight: 500;">${opt.label}</span>
+                                    </label>
+                                `;
+                            });
+                            html += '</div>';
+                    } else {
+                        // Стилизованные кнопки для других тестов
+                        html += '<div class="answer-options" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; justify-content: center;">';
+                        answerOptions.forEach(opt => {
+                            const checked = savedAnswer === opt.value ? 'checked' : '';
+                            html += `
+                                    <label style="padding: 12px 20px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s; min-width: 100px; flex: 1 1 auto; text-align: center; max-width: 200px; ${checked ? 'background-color: #e3f2fd; border-color: #1976d2;' : ''}" onmouseover="if(!this.querySelector('input').checked) this.style.backgroundColor='#f5f5f5'" onmouseout="if(!this.querySelector('input').checked) this.style.backgroundColor='white'">
+                                        <input type="radio" name="answer" value="${opt.value}" ${checked} onchange="saveAnswer(${question.question_number}, '${opt.value}')" style="display: none;">
+                                        <strong style="font-size: 14px;">${opt.label}</strong>
+                                    </label>
+                                `;
+                        });
+                        html += '</div>';
+                    }
+                    }
+                } else if (testType === 'iq_test') {
+                    // Для IQ теста без вариантов в базе - создаем варианты 1-8
+                    html += '<div class="answer-options" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px;">';
+                    for (let i = 1; i <= 8; i++) {
+                        const checked = savedAnswer === String(i) ? 'checked' : '';
+                        html += `
+                            <label style="padding: 12px 8px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; ${checked ? 'background-color: #e3f2fd; border-color: #1976d2;' : ''}" onmouseover="if(!this.querySelector('input').checked) this.style.backgroundColor='#f5f5f5'" onmouseout="if(!this.querySelector('input').checked) this.style.backgroundColor='white'">
+                                <input type="radio" name="answer" value="${i}" ${checked} onchange="saveAnswer(${question.question_number}, '${i}')" style="display: none;">
+                                <strong style="font-size: 16px;">${i}</strong>
+                            </label>
+                        `;
+                    }
+                    html += '</div>';
+                }
+                
+            } else if (displayType === 'checkbox') {
+                // Множественный выбор
+                html += '<div class="answer-options" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">';
+                answerOptions.forEach(opt => {
+                    const checkedValues = Array.isArray(savedAnswer) ? savedAnswer : (savedAnswer ? savedAnswer.split(',') : []);
+                    const checked = checkedValues.includes(opt.value) ? 'checked' : '';
+                    html += `
+                        <label style="padding: 12px 15px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; ${checked ? 'background-color: #e3f2fd; border-color: #1976d2;' : ''}">
+                            <input type="checkbox" name="answer" value="${opt.value}" ${checked} onchange="saveCheckboxAnswer(${question.question_number})" style="margin-right: 10px;">
+                            ${opt.label}
+                        </label>
+                    `;
+                });
+                html += '</div>';
+                
+            } else if (displayType === 'number') {
+                // Числовой ответ
+                html += `<input type="number" id="answer-number" value="${savedAnswer}" style="width: 200px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; margin-top: 10px;" oninput="saveAnswer(${question.question_number}, this.value)" placeholder="Введите число">`;
+            }
+            
+            document.getElementById('question-container').innerHTML = html;
+        }
+        
+        function saveCheckboxAnswer(questionNumber) {
+            const checkboxes = document.querySelectorAll(`input[name="answer"][type="checkbox"]:checked`);
+            const values = Array.from(checkboxes).map(cb => cb.value);
+            saveAnswer(questionNumber, values.join(','));
+        }
+        
+        // Защита от двойной отправки
+        const pendingSubmissions = new Set();
+        let debounceTimers = {};
+        
+        function saveAnswer(questionNumber, answer) {
+            // Преобразуем в число для правильной работы с уникальным ключом
+            questionNumber = parseInt(questionNumber);
+            answers[questionNumber] = answer;
+            
+            // Очищаем предыдущий таймер, если он есть
+            if (debounceTimers[questionNumber]) {
+                clearTimeout(debounceTimers[questionNumber]);
+            }
+            
+            // Используем debounce для предотвращения множественных отправок
+            debounceTimers[questionNumber] = setTimeout(() => {
+                submitAnswer(questionNumber, answer);
+            }, 300); // Задержка 300мс
+        }
+        
+        async function submitAnswer(questionNumber, answer) {
+            // Проверяем, не отправляется ли уже этот ответ
+            const submissionKey = `${questionNumber}_${answer}`;
+            if (pendingSubmissions.has(submissionKey)) {
+                console.log('Ответ уже отправляется, пропускаем...');
+                return;
+            }
+            
+            pendingSubmissions.add(submissionKey);
+            
+            try {
+                const response = await fetch(`/api/tests/sessions/${sessionId}/submit_answer/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question_number: questionNumber,
+                        answer_value: answer
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Ошибка сохранения ответа:', errorData);
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения ответа:', error);
+            } finally {
+                // Удаляем из множества после завершения
+                pendingSubmissions.delete(submissionKey);
+            }
+        }
+        
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                displayQuestion(currentQuestionIndex - 1);
+            }
+        }
+        
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                displayQuestion(currentQuestionIndex + 1);
+            }
+        }
+        
+        async function completeTest() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            // Отключаем кнопку
+            const completeBtn = document.getElementById('complete-btn');
+            completeBtn.disabled = true;
+            
+            // Создаем overlay с индикатором загрузки
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div class="loading-message">
+                    <h3>Тест обрабатывается...</h3>
+                    <p>Пожалуйста, подождите. Результаты анализируются с помощью искусственного интеллекта. Это может занять некоторое время.</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            try {
+                const response = await fetch(`/api/tests/sessions/${sessionId}/complete/`, {
+                    method: 'POST'
+                });
+                
+                // Удаляем overlay
+                if (document.body.contains(overlay)) {
+                    document.body.removeChild(overlay);
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Ошибка завершения теста');
+                }
+                
+                const data = await response.json();
+                document.getElementById('test-content').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+                
+                let resultsHtml = '<h2>Тест завершен!</h2>';
+                if (data.result && data.result.report) {
+                    resultsHtml += `<div style="margin-top: 20px; padding: 20px; background: white; border-radius: 5px; white-space: pre-wrap;">${data.result.report}</div>`;
+                } else {
+                    resultsHtml += '<p>Результаты обрабатываются. Они будут отправлены на вашу почту.</p>';
+                }
+                
+                document.getElementById('results-content').innerHTML = resultsHtml;
+            } catch (error) {
+                // Удаляем overlay в случае ошибки
+                if (document.body.contains(overlay)) {
+                    document.body.removeChild(overlay);
+                }
+                console.error('Ошибка завершения теста:', error);
+                alert('Ошибка при завершении теста: ' + error.message);
+                // Включаем кнопку обратно
+                completeBtn.disabled = false;
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        if (sessionId) {
+            loadTest();
+        } else {
+            document.getElementById('question-container').innerHTML = '<p>Сессия не найдена</p>';
+        }
+        
+        // Установить текущий год в футере
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearElement = document.getElementById('current-year');
+            if (yearElement) {
+                yearElement.textContent = new Date().getFullYear();
+            }
+        });
+    </script>
+    <footer style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #424242; color: white; text-align: center; padding: 15px; font-size: 13px; z-index: 1000;">
+        ТОО "Казахстанские коммунальные системы" © <span id="current-year">2025</span>
+    </footer>
+</body>
+</html>
