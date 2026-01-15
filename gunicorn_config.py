@@ -3,10 +3,13 @@ import multiprocessing
 
 # Базовые настройки
 bind = "unix:/var/www/personnel_testing/personnel_testing.sock"
-workers = multiprocessing.cpu_count() * 2 + 1
+# Уменьшить количество воркеров для экономии памяти
+cpu_count = multiprocessing.cpu_count()
+workers = min(cpu_count * 2 + 1, 4)  # Максимум 4 воркера
+
 worker_class = "sync"
 worker_connections = 1000
-timeout = 30
+timeout = 300  # Увеличить таймаут до 5 минут для длинных запросов к Gemini API
 keepalive = 2
 
 # Логирование

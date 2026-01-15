@@ -34,7 +34,7 @@ def get_gemini_client():
     return model
 
 
-def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5):
+def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5, timeout=240):
     """
     Вызвать Gemini API с промптом
     
@@ -43,6 +43,7 @@ def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5):
         system_instruction: Системная инструкция (опционально)
         max_retries: Максимальное количество попыток при ошибке квоты
         retry_delay: Задержка между попытками в секундах
+        timeout: Таймаут запроса в секундах (по умолчанию 240 секунд = 4 минуты)
     
     Returns:
         str: Ответ от Gemini
@@ -62,6 +63,7 @@ def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5):
     for attempt in range(max_retries):
         try:
             # Используем старый API (google.generativeai)
+            # Таймаут контролируется на уровне Gunicorn (300 секунд)
             if system_instruction:
                 response = model.generate_content(
                     prompt,
@@ -78,6 +80,15 @@ def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5):
         except Exception as e:
             error_str = str(e)
             last_error = e
+            
+            # Проверка на таймаут
+            if "timeout" in error_str.lower() or "deadline" in error_str.lower() or "timed out" in error_str.lower():
+                if attempt < max_retries - 1:
+                    print(f"Таймаут при вызове Gemini API. Попытка {attempt + 1}/{max_retries}. Повтор через {retry_delay} секунд...")
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    raise Exception(f"Таймаут при вызове Gemini API после {max_retries} попыток. Запрос занял слишком много времени.")
             
             # Проверка на ошибку квоты (429)
             if "429" in error_str or "quota" in error_str.lower() or "rate" in error_str.lower():
