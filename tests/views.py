@@ -29,10 +29,10 @@ class TestSessionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
-            return TestSession.objects.filter(user=user)
+            return TestSession.objects.filter(user=user).order_by('-created_at')
         # Для неавторизованных (соискателей) возвращаем сессии по ID из URL или query params
         # Это позволяет получить сессию через /api/tests/sessions/{id}/start/
-        return TestSession.objects.all()
+        return TestSession.objects.all().order_by('-created_at')
     
     def get_object(self):
         """
@@ -560,4 +560,4 @@ class TestResultViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return TestResult.objects.filter(session__user=self.request.user)
+        return TestResult.objects.filter(session__user=self.request.user).order_by('-created_at')
