@@ -6,16 +6,11 @@ import json
 from django.conf import settings
 
 try:
-    # Используем новый пакет google.genai вместо устаревшего google.generativeai
-    try:
-        import google.genai as genai
-        GEMINI_AVAILABLE = True
-        USE_NEW_API = True
-    except ImportError:
-        # Fallback на старый пакет для обратной совместимости
-        import google.generativeai as genai
-        GEMINI_AVAILABLE = True
-        USE_NEW_API = False
+    # Используем старый пакет google.generativeai (новый google.genai имеет другой API)
+    # TODO: Обновить на google.genai после изучения нового API
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
+    USE_NEW_API = False
 except ImportError:
     GEMINI_AVAILABLE = False
     USE_NEW_API = False
@@ -25,20 +20,16 @@ except ImportError:
 def get_gemini_client():
     """Получить клиент Gemini API"""
     if not GEMINI_AVAILABLE:
-        raise ImportError("Библиотека google-genai не установлена. Установите: pip install google-genai")
+        raise ImportError("Библиотека google-generativeai не установлена. Установите: pip install google-generativeai")
     
     api_key = getattr(settings, 'GEMINI_API_KEY', os.getenv('GEMINI_API_KEY'))
     if not api_key:
         raise ValueError("GEMINI_API_KEY не установлен в настройках или переменных окружения")
     
-    if USE_NEW_API:
-        # Новый API (google.genai)
-        client = genai.Client(api_key=api_key)
-        model = client.models.get('gemini-2.5-flash')
-    else:
-        # Старый API (google.generativeai) для обратной совместимости
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-flash')
+    # Используем старый API (google.generativeai)
+    # Предупреждение о deprecation можно игнорировать, API все еще работает
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-2.5-flash')
     
     return model
 
@@ -70,35 +61,19 @@ def call_gemini(prompt, system_instruction=None, max_retries=3, retry_delay=5):
     last_error = None
     for attempt in range(max_retries):
         try:
-            if USE_NEW_API:
-                # Новый API (google.genai)
-                if system_instruction:
-                    response = model.generate_content(
-                        prompt,
-                        config=generation_config,
-                        system_instruction=system_instruction
-                    )
-                else:
-                    response = model.generate_content(
-                        prompt,
-                        config=generation_config
-                    )
-                # В новом API текст получается через .text
-                return response.text
+            # Используем старый API (google.generativeai)
+            if system_instruction:
+                response = model.generate_content(
+                    prompt,
+                    generation_config=generation_config,
+                    system_instruction=system_instruction
+                )
             else:
-                # Старый API (google.generativeai) для обратной совместимости
-                if system_instruction:
-                    response = model.generate_content(
-                        prompt,
-                        generation_config=generation_config,
-                        system_instruction=system_instruction
-                    )
-                else:
-                    response = model.generate_content(
-                        prompt,
-                        generation_config=generation_config
-                    )
-                return response.text
+                response = model.generate_content(
+                    prompt,
+                    generation_config=generation_config
+                )
+            return response.text
             
         except Exception as e:
             error_str = str(e)
