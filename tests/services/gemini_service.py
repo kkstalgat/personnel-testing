@@ -3,7 +3,10 @@
 """
 import os
 import json
+import logging
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 try:
     # Используем старый пакет google.generativeai (новый google.genai имеет другой API)
@@ -63,7 +66,7 @@ def call_gemini(prompt, system_instruction=None, max_retries=2, retry_delay=5, t
     last_error = None
     for attempt in range(max_retries):
         try:
-            print(f"[Gemini API] Попытка {attempt + 1}/{max_retries}. Длина промпта: {len(prompt)} символов")
+            logger.info(f"[Gemini API] Попытка {attempt + 1}/{max_retries}. Длина промпта: {len(prompt)} символов")
             
             # Используем старый API (google.generativeai)
             # Таймаут контролируется на уровне Gunicorn (300 секунд)
@@ -79,7 +82,7 @@ def call_gemini(prompt, system_instruction=None, max_retries=2, retry_delay=5, t
                     generation_config=generation_config
                 )
             
-            print(f"[Gemini API] Успешно получен ответ, длина: {len(response.text)} символов")
+            logger.info(f"[Gemini API] Успешно получен ответ, длина: {len(response.text)} символов")
             return response.text
             
         except Exception as e:
@@ -87,7 +90,7 @@ def call_gemini(prompt, system_instruction=None, max_retries=2, retry_delay=5, t
             last_error = e
             error_type = type(e).__name__
             
-            print(f"[Gemini API] Ошибка (попытка {attempt + 1}/{max_retries}): {error_type}: {error_str[:200]}")
+            logger.error(f"[Gemini API] Ошибка (попытка {attempt + 1}/{max_retries}): {error_type}: {error_str[:200]}")
             
             # Проверка на таймаут или зависание
             if ("timeout" in error_str.lower() or 
@@ -96,7 +99,7 @@ def call_gemini(prompt, system_instruction=None, max_retries=2, retry_delay=5, t
                 "SIGKILL" in error_str or
                 error_type in ["Timeout", "DeadlineExceeded"]):
                 if attempt < max_retries - 1:
-                    print(f"[Gemini API] Таймаут. Повтор через {retry_delay} секунд...")
+                    logger.warning(f"[Gemini API] Таймаут. Повтор через {retry_delay} секунд...")
                     time.sleep(retry_delay)
                     continue
                 else:
