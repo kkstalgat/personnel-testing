@@ -467,14 +467,20 @@ class TestSessionViewSet(viewsets.ModelViewSet):
         
         # Отправка email пользователю с результатами
         if session.user:
-            send_mail(
-                f'Результаты тестирования: {session.candidate_email}',
-                f'Результаты тестирования для {session.candidate_email}:\n\n'
-                f'{test_result.report}',
-                settings.DEFAULT_FROM_EMAIL,
-                [session.user.email],
-                fail_silently=False,
-            )
+            try:
+                send_mail(
+                    f'Результаты тестирования: {session.candidate_email}',
+                    f'Результаты тестирования для {session.candidate_email}:\n\n'
+                    f'{test_result.report}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [session.user.email],
+                    fail_silently=True,  # Не прерывать выполнение при ошибке email
+                )
+            except Exception as e:
+                # Логируем ошибку, но не прерываем выполнение
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Ошибка отправки email для сессии {session.id}: {str(e)}")
         
         serializer = TestResultSerializer(test_result)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
