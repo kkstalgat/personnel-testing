@@ -22,6 +22,13 @@ jobs:
           echo "🔐 Настройка Git safe.directory..."
           git config --global --add safe.directory /var/www/personnel_testing
           
+          echo "🔐 Исправление прав доступа к .git..."
+          # Узнаем текущего пользователя (runner)
+          RUNNER_USER=$(whoami)
+          # Устанавливаем права на .git для текущего пользователя
+          sudo chown -R $RUNNER_USER:$RUNNER_USER .git || true
+          chmod -R u+w .git || true
+          
           echo "📥 Получение изменений из Git..."
           git fetch origin
           git reset --hard origin/main
