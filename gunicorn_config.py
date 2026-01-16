@@ -19,8 +19,9 @@ loglevel = "info"
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(D)s'
 
 # Безопасность
-user = "deploy"
-group = "deploy"
+# user и group управляются через systemd service
+# user = "ubuntu"  # Раскомментируйте и укажите нужного пользователя, если нужно
+# group = "ubuntu"
 umask = 0o007
 
 # Перезапуск при изменении кода (для разработки)

@@ -52,6 +52,19 @@ jobs:
           echo "📁 Сбор статических файлов..."
           python manage.py collectstatic --noinput
           
+          echo "🔐 Исправление прав на логи и сокет..."
+          # Узнаем пользователя Gunicorn из systemd service
+          GUNICORN_USER=$(systemctl show -p User personnel_testing.service 2>/dev/null | cut -d= -f2 || echo "ubuntu")
+          # Создаем директорию logs, если её нет
+          sudo mkdir -p /var/www/personnel_testing/logs
+          # Устанавливаем права на логи и сокет для Gunicorn
+          sudo chown -R $GUNICORN_USER:$GUNICORN_USER /var/www/personnel_testing/logs
+          sudo chmod -R u+w /var/www/personnel_testing/logs
+          # Исправляем права на сокет (если существует)
+          if [ -S /var/www/personnel_testing/personnel_testing.sock ]; then
+              sudo chown $GUNICORN_USER:$GUNICORN_USER /var/www/personnel_testing/personnel_testing.sock
+          fi
+          
           echo "🔄 Перезапуск Gunicorn..."
           sudo systemctl restart personnel_testing || echo "⚠️ Ошибка перезапуска Gunicorn, но продолжаем..."
           
