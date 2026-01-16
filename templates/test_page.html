@@ -621,7 +621,7 @@
                 <div class="loading-spinner"></div>
                 <div class="loading-message">
                     <h3>Тест обрабатывается...</h3>
-                    <p>Пожалуйста, подождите. Результаты анализируются с помощью искусственного интеллекта. Это может занять некоторое время.</p>
+                    <p>Пожалуйста, подождите. Идет комплексная сверка данных и расчет метрик.</p>
                 </div>
             `;
             document.body.appendChild(overlay);
@@ -649,7 +649,7 @@
                 if (data.result && data.result.report) {
                     resultsHtml += `<div style="margin-top: 20px; padding: 20px; background: white; border-radius: 5px; white-space: pre-wrap;">${data.result.report}</div>`;
                 } else {
-                    resultsHtml += '<p>Результаты обрабатываются. Они будут отправлены на вашу почту.</p>';
+                    resultsHtml += '<p>Результаты обрабатываются. После обработки результатов с Вами свяжется представитель компании.</p>';
                 }
                 
                 document.getElementById('results-content').innerHTML = resultsHtml;
