@@ -19,6 +19,9 @@ jobs:
           
           cd /var/www/personnel_testing
           
+          echo "🔐 Настройка Git safe.directory..."
+          git config --global --add safe.directory /var/www/personnel_testing
+          
           echo "📥 Получение изменений из Git..."
           git fetch origin
           git reset --hard origin/main
