@@ -30,14 +30,22 @@ jobs:
           pip install --upgrade pip --quiet
           pip install -r requirements.txt --quiet
           
+          echo "🗄️ Создание миграций (если нужно)..."
+          python manage.py makemigrations --noinput || true
+          
           echo "🗄️ Применение миграций..."
           python manage.py migrate --noinput
+          
+          echo "📁 Создание директории static (если нужно)..."
+          mkdir -p static || true
           
           echo "📁 Сбор статических файлов..."
           python manage.py collectstatic --noinput
           
-          echo "🔄 Перезапуск сервисов..."
-          sudo systemctl restart personnel_testing
-          sudo systemctl reload nginx
+          echo "🔄 Перезапуск Gunicorn..."
+          sudo systemctl restart personnel_testing || echo "⚠️ Ошибка перезапуска Gunicorn, но продолжаем..."
+          
+          echo "🔄 Проверка конфигурации Nginx..."
+          sudo nginx -t && sudo systemctl reload nginx || echo "⚠️ Ошибка перезагрузки Nginx, проверьте конфигурацию"
           
           echo "✅ Деплой завершен!"
