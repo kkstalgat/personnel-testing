@@ -7,59 +7,37 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Используем self-hosted runner
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Verify secrets are set
+      - name: Deploy application
         run: |
-          if [ -z "${{ secrets.SERVER_HOST }}" ]; then
-            echo "❌ SERVER_HOST is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.SERVER_USER }}" ]; then
-            echo "❌ SERVER_USER is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then
-            echo "❌ SERVER_SSH_KEY is not set"
-            exit 1
-          fi
-          echo "✅ All secrets are set"
-      
-      - name: Deploy to server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_PORT || '22' }}
-          script: |
-            set -e
-            
-            cd /var/www/personnel_testing
-            
-            echo "📥 Получение изменений из Git..."
-            git fetch origin
-            git reset --hard origin/main
-            
-            echo "🔧 Активация виртуального окружения..."
-            source venv/bin/activate
-            
-            echo "📦 Обновление зависимостей..."
-            pip install --upgrade pip --quiet
-            pip install -r requirements.txt --quiet
-            
-            echo "🗄️ Применение миграций..."
-            python manage.py migrate --noinput
-            
-            echo "📁 Сбор статических файлов..."
-            python manage.py collectstatic --noinput
-            
-            echo "🔄 Перезапуск сервисов..."
-            sudo systemctl restart personnel_testing
-            sudo systemctl reload nginx
-            
-            echo "✅ Деплой завершен!"
+          set -e
+          
+          cd /var/www/personnel_testing
+          
+          echo "📥 Получение изменений из Git..."
+          git fetch origin
+          git reset --hard origin/main
+          
+          echo "🔧 Активация виртуального окружения..."
+          source venv/bin/activate
+          
+          echo "📦 Обновление зависимостей..."
+          pip install --upgrade pip --quiet
+          pip install -r requirements.txt --quiet
+          
+          echo "🗄️ Применение миграций..."
+          python manage.py migrate --noinput
+          
+          echo "📁 Сбор статических файлов..."
+          python manage.py collectstatic --noinput
+          
+          echo "🔄 Перезапуск сервисов..."
+          sudo systemctl restart personnel_testing
+          sudo systemctl reload nginx
+          
+          echo "✅ Деплой завершен!"
