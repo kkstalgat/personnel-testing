@@ -22,7 +22,7 @@ access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
 # user и group управляются через systemd service
 # user = "ubuntu"  # Раскомментируйте и укажите нужного пользователя, если нужно
 # group = "ubuntu"
-umask = 0o007
+umask = 0o022  # Более мягкие права для создания файлов
 
 # Перезапуск при изменении кода (для разработки)
 # reload = True

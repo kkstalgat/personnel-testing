@@ -110,12 +110,30 @@ else
 fi
 
 # Проверка процессов Gunicorn
-WORKER_COUNT=$(ps aux | grep -c "[g]unicorn.*worker")
-if [ "$WORKER_COUNT" -gt 0 ]; then
-    log_message "✅ Gunicorn workers: $WORKER_COUNT"
-else
-    log_message "❌ Gunicorn workers: 0"
+# Используем несколько методов для надежности
+GUNICORN_PIDS=$(pgrep -f "gunicorn.*personnel_testing.wsgi" 2>/dev/null | wc -l)
+
+# Альтернативный метод через ps, если pgrep не работает
+if [ "$GUNICORN_PIDS" -eq 0 ]; then
+    GUNICORN_PIDS=$(ps aux | grep -E "[g]unicorn.*personnel_testing" | wc -l)
+fi
+
+if [ "$GUNICORN_PIDS" -gt 1 ]; then
+    # Вычитаем master процесс, остальные - воркеры
+    WORKER_COUNT=$((GUNICORN_PIDS - 1))
+    log_message "✅ Gunicorn workers: $WORKER_COUNT (total processes: $GUNICORN_PIDS)"
+elif [ "$GUNICORN_PIDS" -eq 1 ]; then
+    log_message "⚠️  WARNING: Only master process found, no workers! (total processes: $GUNICORN_PIDS)"
     ALL_OK=false
+else
+    # Если процессов нет, но сервис работает - возможно проблема
+    if systemctl is-active --quiet personnel_testing; then
+        log_message "⚠️  WARNING: Service is active but no gunicorn processes found!"
+        ALL_OK=false
+    else
+        log_message "❌ Gunicorn workers: 0 (no gunicorn processes found)"
+        ALL_OK=false
+    fi
 fi
 
 if [ "$ALL_OK" = true ]; then
