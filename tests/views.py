@@ -17,7 +17,7 @@ from .utils.pdf_generator import generate_pdf_report
 
 
 class TestViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Test.objects.filter(is_active=True)
+    queryset = Test.objects.filter(is_active=True).order_by('-created_at')
     serializer_class = TestSerializer
     permission_classes = [AllowAny]
 

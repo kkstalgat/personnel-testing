@@ -25,6 +25,7 @@ class Test(models.Model):
     class Meta:
         verbose_name = 'Тест'
         verbose_name_plural = 'Тесты'
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.name
