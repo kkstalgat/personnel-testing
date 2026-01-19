@@ -179,13 +179,20 @@ class TestSessionViewSet(viewsets.ModelViewSet):
                     email_error = str(e)
                     # Логируем ошибку подробно
                     import traceback
-                    print(f"\n{'='*60}")
-                    print(f"ОШИБКА ОТПРАВКИ EMAIL:")
-                    print(f"Email: {candidate_email}")
-                    print(f"Ошибка: {email_error}")
-                    print(f"Traceback:")
-                    traceback.print_exc()
-                    print(f"{'='*60}\n")
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    
+                    error_details = f"""
+{'='*60}
+ОШИБКА ОТПРАВКИ EMAIL:
+Email: {candidate_email}
+Ошибка: {email_error}
+Traceback:
+{traceback.format_exc()}
+{'='*60}
+"""
+                    logger.error(error_details)
+                    print(error_details)
                     
                     # Если это не console backend, пробуем отправить через другой способ
                     if settings.EMAIL_BACKEND != 'django.core.mail.backends.console.EmailBackend':
@@ -479,8 +486,18 @@ class TestSessionViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 # Логируем ошибку, но не прерываем выполнение
                 import logging
+                import traceback
                 logger = logging.getLogger(__name__)
-                logger.error(f"Ошибка отправки email для сессии {session.id}: {str(e)}")
+                error_details = f"""
+ОШИБКА ОТПРАВКИ EMAIL (сессия {session.id}):
+Получатель: {session.user.email if session.user else 'N/A'}
+Отправитель: {settings.DEFAULT_FROM_EMAIL}
+Ошибка: {str(e)}
+Тип ошибки: {type(e).__name__}
+Traceback:
+{traceback.format_exc()}
+"""
+                logger.error(error_details)
         
         serializer = TestResultSerializer(test_result)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
