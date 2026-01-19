@@ -3,8 +3,9 @@
 
 # --- HTTP : нужен для Let's Encrypt challenge + редирект на HTTPS ---
 server {
-    listen 80;
-    server_name chartesting.kus.kz 192.168.100.159;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name chartesting.kus.kz 192.168.100.159 _;
 
     # Let's Encrypt challenge (certbot webroot)
     location ^~ /.well-known/acme-challenge/ {

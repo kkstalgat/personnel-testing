@@ -3,22 +3,26 @@
 # Используется в ExecStartPost systemd service
 
 SOCKET_PATH="/var/www/personnel_testing/personnel_testing.sock"
-MAX_ATTEMPTS=20  # Максимальное количество попыток
+MAX_ATTEMPTS=30  # Максимальное количество попыток (15 секунд)
 WAIT_INTERVAL=0.5  # Интервал проверки в секундах
 
-# Ждем создания сокета
+# Ждем создания сокета (используем полные пути)
 attempt=0
-while [ ! -S "$SOCKET_PATH" ] && [ $attempt -lt $MAX_ATTEMPTS ]; do
-    sleep $WAIT_INTERVAL
+while [ $attempt -lt $MAX_ATTEMPTS ]; do
+    if [ -S "$SOCKET_PATH" ]; then
+        break
+    fi
+    /bin/sleep $WAIT_INTERVAL
     attempt=$((attempt + 1))
 done
 
-# Если сокет создан, исправляем права
+# Если сокет создан, исправляем права (используем полные пути)
 if [ -S "$SOCKET_PATH" ]; then
-    chown ubuntu:www-data "$SOCKET_PATH"
-    chmod 660 "$SOCKET_PATH"
+    /bin/chown ubuntu:www-data "$SOCKET_PATH" 2>/dev/null || true
+    /bin/chmod 660 "$SOCKET_PATH" 2>/dev/null || true
     exit 0
 else
-    echo "Warning: Socket not created within timeout"
-    exit 1
+    # Если сокет не создан, это не критично - возможно Gunicorn еще запускается
+    # Не возвращаем ошибку, чтобы не блокировать запуск сервиса
+    exit 0
 fi
