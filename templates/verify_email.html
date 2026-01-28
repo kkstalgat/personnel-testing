@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подтверждение email - IQ System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        p {
+            font-size: 15px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-icon">🧠</div>
+        <h1>Подтверждение email</h1>
+        <p id="description">Проверяем ваш токен подтверждения, пожалуйста подождите…</p>
+        <div id="status" class="status"></div>
+        <a href="/login/" id="login-link" class="btn" style="display:none;">Перейти к входу</a>
+    </div>
+
+    <script>
+        async function verifyEmail() {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            const token = pathParts[pathParts.length - 1];
+
+            const statusEl = document.getElementById('status');
+            const descEl = document.getElementById('description');
+            const loginLink = document.getElementById('login-link');
+
+            if (!token) {
+                statusEl.textContent = 'Токен подтверждения не найден в ссылке.';
+                statusEl.classList.add('error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/accounts/users/verify_email/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    descEl.textContent = '';
+                    statusEl.textContent = data.message || 'Email успешно подтвержден!';
+                    statusEl.classList.add('success');
+                    loginLink.style.display = 'inline-block';
+                } else {
+                    statusEl.textContent = data.error || data.detail || 'Ошибка подтверждения email.';
+                    statusEl.classList.add('error');
+                }
+            } catch (e) {
+                statusEl.textContent = 'Ошибка соединения с сервером. Попробуйте позже.';
+                statusEl.classList.add('error');
+                console.error(e);
+            }
+        }
+
+        verifyEmail();
+    </script>
+</body>
+</html>
+

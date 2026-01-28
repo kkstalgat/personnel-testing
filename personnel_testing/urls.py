@@ -34,6 +34,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', TemplateView.as_view(template_name='login.html'), name='login'),
     path('register/', TemplateView.as_view(template_name='register.html'), name='register'),
+    path('verify-email/<str:token>/', TemplateView.as_view(template_name='verify_email.html'), name='verify_email'),
     path('api/', api_root, name='api_root'),
     path('api/accounts/', include('accounts.urls')),
     path('api/tests/', include('tests.urls')),
