@@ -50,8 +50,7 @@ MIDDLEWARE = [
 # CSRF настройки для API
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
-    'https://chartesting.kus.kz',
-    'http://chartesting.kus.kz',
+    default='https://chartesting.kus.kz',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
@@ -154,8 +153,7 @@ SIMPLE_JWT = {
 # CORS
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    'https://chartesting.kus.kz',
-    'http://chartesting.kus.kz',
+    default='https://chartesting.kus.kz',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
