@@ -7,7 +7,6 @@ from django.contrib.auth import authenticate
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth import login
 from .models import User, Subscription, SubscriptionPlan, Module, UserModule
 from .serializers import UserSerializer, SubscriptionSerializer, SubscriptionPlanSerializer
 
@@ -77,7 +76,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 refresh_token = str(refresh)
                 
                 serializer = self.get_serializer(user)
-                login(request, user)
                 
                 return Response({
                     'user': serializer.data,

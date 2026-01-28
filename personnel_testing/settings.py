@@ -18,6 +18,12 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
+# If the app is behind a reverse proxy (nginx / Cloudflare) that terminates TLS,
+# trust X-Forwarded-* headers so Django treats requests as HTTPS and CSRF referer/origin
+# checks work correctly.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 
 # Application definition
 
@@ -50,7 +56,7 @@ MIDDLEWARE = [
 # CSRF настройки для API
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
-    default='https://chartesting.kus.kz',
+    default='https://chartesting.kus.kz,http://chartesting.kus.kz',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
@@ -130,7 +136,6 @@ AUTH_USER_MODEL = 'accounts.User'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -153,7 +158,7 @@ SIMPLE_JWT = {
 # CORS
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='https://chartesting.kus.kz',
+    default='https://chartesting.kus.kz,http://chartesting.kus.kz',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
