@@ -2,6 +2,18 @@
 # Скопируйте в /etc/nginx/sites-available/personnel_testing
 
 # --- HTTP : нужен для Let's Encrypt challenge + редирект на HTTPS ---
+#
+# IMPORTANT:
+# If you're behind a proxy/CDN (e.g., Cloudflare) that terminates HTTPS and
+# connects to your origin via HTTP, the browser sees https://... but Django
+# receives http://... unless we preserve the incoming X-Forwarded-Proto.
+# This mismatch commonly causes Django CSRF 403 ("CSRF verification failed").
+
+map $http_x_forwarded_proto $proxy_x_forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -25,7 +37,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
         proxy_redirect off;
         
         # Таймауты (увеличены для длинных запросов к Gemini API)

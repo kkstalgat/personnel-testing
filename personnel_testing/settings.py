@@ -56,7 +56,9 @@ MIDDLEWARE = [
 # CSRF настройки для API
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
-    default='https://chartesting.kus.kz,http://chartesting.kus.kz',
+    # Allow the exact domain and any subdomains (useful if traffic comes via www,
+    # preview subdomain, or CDN/proxy hostnames).
+    default='https://chartesting.kus.kz,http://chartesting.kus.kz,https://*.kus.kz,http://*.kus.kz',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
