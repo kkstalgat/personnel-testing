@@ -53,13 +53,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CSRF настройки для API
+# CSRF настройки
+# Django не поддерживает wildcards в CSRF_TRUSTED_ORIGINS, нужны точные домены
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
-    # Allow the exact domain and any subdomains (useful if traffic comes via www,
-    # preview subdomain, or CDN/proxy hostnames).
-    default='https://chartesting.kus.kz,http://chartesting.kus.kz,https://*.kus.kz,http://*.kus.kz',
-    cast=lambda v: [s.strip() for s in v.split(',')]
+    default='https://chartesting.kus.kz,http://chartesting.kus.kz',
+    cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]
 )
 
 ROOT_URLCONF = 'personnel_testing.urls'
